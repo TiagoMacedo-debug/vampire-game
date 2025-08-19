@@ -26,17 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function createCardElement(cardData, index) { const e = document.createElement("div"); e.classList.add("card"); if (player && index === player.position) { e.classList.add("player", player.clan.class); const bloodStat = document.createElement('div'); bloodStat.className = 'card-stat player-blood-stat'; bloodStat.textContent = `${player.blood}`; e.appendChild(bloodStat); const humanityStat = document.createElement('div'); humanityStat.className = 'card-stat player-humanity-stat'; humanityStat.textContent = `${player.humanity}`; e.appendChild(humanityStat); } else if (cardData) { e.classList.add("card-" + cardData.name.replace('_','-')); const isAdj = player ? isAdjacentForMovement(player.position, index) : false; if (isAdj) { if (activeDiscipline && activeDiscipline.targetType && (activeDiscipline.targetType === "any" || cardData.type.includes(activeDiscipline.targetType))) { e.classList.add("targetable"); e.addEventListener("click", () => targetDiscipline(index)); } else { e.addEventListener("click", () => movePlayer(index)); } } else { e.classList.add("non-adjacent"); } e.innerHTML = `<span>${cardData.isRevealed ? cardData.type.toUpperCase() : cardData.name.replace('_',' ')}</span>`; if (cardData.blood) { const s = document.createElement('div'); s.className = `card-stat ${cardData.blood > 0 ? "stat-gain" : "stat-loss"}`; s.textContent = `${cardData.blood > 0 ? "+" : ""}${cardData.blood}`; e.appendChild(s); } if (cardData.humanity) { const s = document.createElement('div'); s.className = `card-stat ${cardData.humanity > 0 ? "stat-gain" : "stat-loss"}`; s.textContent = `${cardData.humanity > 0 ? "+" : ""}${cardData.humanity}`; s.style.color = "#2196F3"; s.style.top = "30px"; e.appendChild(s); } } return e; }
     function drawDisciplineButtons() { const c = document.getElementById("disciplines-container"); if(c) { c.innerHTML = ""; if (player && player.clan) { player.clan.disciplines.forEach(d => { const b = document.createElement("button"); b.className = "discipline-btn"; b.textContent = `${d.name} (${d.cost})`; b.title = d.description; b.onclick = () => activateDiscipline(d); if (activeDiscipline && activeDiscipline.effect === d.effect) b.classList.add("active"); c.appendChild(b); }); } } }
-    
-    function updateUI() {
-        boardElement.innerHTML = ''; gameBoard.forEach((cardData, index) => { const cardElement = createCardElement(cardData, index); cardElement.style.transform = ''; cardElement.style.opacity = '1'; boardElement.appendChild(cardElement); });
-        if(player) {
-            document.getElementById('clan-name').textContent = player.clan.name;
-            document.getElementById('blood-stat').textContent = player.blood; // Revertido para não mostrar o máximo
-            document.getElementById('humanity-stat').textContent = player.humanity;
-        }
-        drawDisciplineButtons();
-    }
-
+    function updateUI() { boardElement.innerHTML = ''; gameBoard.forEach((cardData, index) => { const cardElement = createCardElement(cardData, index); cardElement.style.transform = ''; cardElement.style.opacity = '1'; boardElement.appendChild(cardElement); }); if(player) { document.getElementById('clan-name').textContent = player.clan.name; document.getElementById('blood-stat').textContent = player.blood; document.getElementById('humanity-stat').textContent = player.humanity; } drawDisciplineButtons(); }
     function populateClanStore() { const container = document.getElementById('clans-store-container'); container.innerHTML = ''; for (const clanName in clans) { const clan = clans[clanName]; const card = document.createElement('div'); card.className = 'clan-store-card'; let html = `<h3>${clan.name}</h3><p>${clan.description}</p><h4>Disciplinas:</h4><ul class="discipline-list">${clan.disciplines.map(d=>`<li><strong>${d.name} (${d.cost}):</strong> ${d.description}</li>`).join('')}</ul>`; if (unlockedClans[clanName]) { card.classList.add('unlocked'); html += `<div class="buy-section"><span><strong>Desbloqueado</strong></span></div>`; } else { card.classList.add('locked'); html += `<div class="buy-section"><button class="buy-btn" data-clan="${clanName}" ${totalInfluence < clan.cost ? 'disabled' : ''}>Comprar (${clan.cost} Influência)</button></div>`; } card.innerHTML = html; container.appendChild(card); } document.querySelectorAll('.buy-btn').forEach(btn => btn.addEventListener('click', () => buyClan(btn.dataset.clan))); }
     function populateClanSelection() { const container = document.getElementById('clan-selection-container'); container.innerHTML = ''; for(const clanName in unlockedClans) { if (unlockedClans[clanName]) { const btn = document.createElement('button'); btn.className = 'menu-btn'; btn.textContent = clanName; btn.addEventListener('click', () => startGame(clanName)); container.appendChild(btn); } } }
     function animateCascade(emptyIndex) { const adjacentIndices = getOrthogonalAdjacentIndices(emptyIndex); if (adjacentIndices.length === 0) { gameBoard[emptyIndex] = getRandomCard(); updateUI(); return; } const police = adjacentIndices.filter(i => gameBoard[i].type.includes('danger')); const replacementIndex = police.length > 0 ? police[0] : adjacentIndices[0]; const cardToMoveElement = Array.from(boardElement.children)[replacementIndex]; const emptyCardElement = Array.from(boardElement.children)[emptyIndex]; if (!cardToMoveElement || !emptyCardElement) return; cardToMoveElement.style.transform = `translate(${emptyCardElement.offsetLeft - cardToMoveElement.offsetLeft}px, ${emptyCardElement.offsetTop - cardToMoveElement.offsetTop}px)`; setTimeout(() => { gameBoard[emptyIndex] = gameBoard[replacementIndex]; gameBoard[replacementIndex] = getRandomCard(); updateUI(); }, 200); }
@@ -48,8 +38,47 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadGame() { const savedGame = localStorage.getItem('vtm_save_game'); if (savedGame) { const savedState = JSON.parse(savedGame); player = savedState.player; gameBoard = savedState.gameBoard; logMessage('Continuando a noite...'); isPlayerTurn = true; updateUI(); showScreen('game'); return true; } return false; }
     function buyClan(clanName) { const clan = clans[clanName]; if (totalInfluence >= clan.cost && !unlockedClans[clanName]) { totalInfluence -= clan.cost; unlockedClans[clanName] = true; saveMetaState(); document.getElementById('total-influence-display').textContent = totalInfluence; populateClanStore(); } }
     
-    function endGame(endMessage) { isPlayerTurn = false; let runInfluence = player.runStats.influenceGained; let summaryHTML = `<h3>Resumo da Noite</h3><p>+${runInfluence.toFixed(1)} por suas ações.</p>`; const e = player.runStats.elitesDefeated * 5; if (e > 0) { runInfluence += e; summaryHTML += `<p>+${e} (Bônus) por eliminar ameaças.</p>`; } const a = player.runStats.alliesMaintained * 1; if (a > 0) { runInfluence += a; summaryHTML += `<p>+${a} por manter seus aliados.</p>`; } const b = player.runStats.embraced * 5; if (b > 0) { runInfluence += b; summaryHTML += `<p>+${b} por expandir sua linhagem.</p>`; } totalInfluence += runInfluence; saveMetaState(); localStorage.removeItem('vtm_save_game'); boardElement.innerHTML = `<div class="end-game-summary"><h2>${endMessage}</h2>${summaryHTML}<h4>Influência total ganha: ${runInfluence.toFixed(1)}</h4></div>`; const abilities = document.getElementById('abilities'); if(abilities) abilities.innerHTML = ''; const quitBtn = document.getElementById('quit-run-btn'); if(quitBtn) { quitBtn.textContent = "Voltar ao Menu"; quitBtn.onclick = () => init(); } }
-    function endTurn({ message, oldPosition }) { if (player.isDiseased) { player.blood--; logMessage(message.trim() + " (Você se sente doente...)"); } else { logMessage(message.trim()); } if (oldPosition !== undefined && oldPosition !== -1) { animateCascade(oldPosition); } else { updateUI(); } if (player.blood <= 0) { endGame("Você sucumbiu à Fome Final."); return; } if (player.humanity <= 0) { endGame("Você se entregou à Besta."); return; } saveGame(); setTimeout(() => { isPlayerTurn = true; }, 450); }
+    function endGame(endMessage) {
+        isPlayerTurn = false; let runInfluence = player.runStats.influenceGained; let summaryHTML = `<h3>Resumo da Noite</h3><p>+${runInfluence.toFixed(1)} por suas ações.</p>`;
+        if (player.blood > 0 && player.humanity > 0) { const s = 10; runInfluence += s; summaryHTML += `<p>+${s} (Bônus) por sobreviver.</p>`; }
+        const e = player.runStats.elitesDefeated * 5; if (e > 0) { runInfluence += e; summaryHTML += `<p>+${e} (Bônus) por eliminar ameaças.</p>`; }
+        const a = player.runStats.alliesMaintained * 1; if (a > 0) { runInfluence += a; summaryHTML += `<p>+${a} por manter seus aliados.</p>`; }
+        const b = player.runStats.embraced * 5; if (b > 0) { runInfluence += b; summaryHTML += `<p>+${b} por expandir sua linhagem.</p>`; }
+        totalInfluence += runInfluence; saveMetaState(); localStorage.removeItem('vtm_save_game');
+        boardElement.innerHTML = `<div class="end-game-summary"><h2>${endMessage}</h2>${summaryHTML}<h4>Influência total ganha: ${runInfluence.toFixed(1)}</h4></div>`;
+        const abilities = document.getElementById('abilities'); if(abilities) abilities.innerHTML = '';
+        const quitBtn = document.getElementById('quit-run-btn'); if(quitBtn) { quitBtn.textContent = "Voltar ao Menu"; quitBtn.onclick = () => init(); }
+    }
+
+    // AQUI ESTÁ A CORREÇÃO PRINCIPAL
+    function endTurn({ message, oldPosition }) {
+        if (player.isDiseased) {
+            player.blood--;
+            message = message.trim() + " (Você se sente doente...)";
+        }
+        
+        // PRIMEIRO, checa se o jogo acabou.
+        if (player.blood <= 0) {
+            logMessage(message);
+            endGame("Você sucumbiu à Fome Final.");
+            return; // PARA a execução aqui.
+        }
+        if (player.humanity <= 0) {
+            logMessage(message);
+            endGame("Você se entregou à Besta.");
+            return; // PARA a execução aqui.
+        }
+
+        // SE o jogo não acabou, continua normalmente.
+        logMessage(message.trim());
+        if (oldPosition !== undefined && oldPosition !== -1) {
+            animateCascade(oldPosition);
+        } else {
+            updateUI();
+        }
+        saveGame();
+        setTimeout(() => { isPlayerTurn = true; }, 450);
+    }
     
     function resolveChoice(choice, oldPosition) {
         choiceModal.classList.add("hidden"); let message = '';
@@ -79,21 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         endTurn({ message, oldPosition });
     }
     
-    function showChoiceModal(cardType, oldPosition) {
-        const title = document.querySelector('#choice-modal h3'); const desc = document.querySelector('#choice-modal p');
-        const btn1 = document.getElementById('choice-btn-1'); const btn2 = document.getElementById('choice-btn-2');
-        if (cardType === 'ally_choice') {
-            title.textContent = "Um Carniçal Leal"; desc.textContent = "Você pode sacrificá-lo para limpar a área, ou reforçar sua lealdade para o futuro.";
-            btn1.textContent = "Sacrificar (-2 Humanidade)"; btn2.textContent = "Alimentar (-1 Sangue, +1 Influência)";
-            btn1.onclick = () => resolveChoice('sacrifice', oldPosition); btn2.onclick = () => resolveChoice('maintain', oldPosition);
-        } else if (cardType === 'fateful_choice') {
-            title.textContent = "A Oportunidade de um Abraço"; desc.textContent = "Este mortal... ele tem potencial. Amaldiçoá-lo com a imortalidade trará grande poder, a um custo.";
-            btn1.textContent = "Ignorar"; btn2.textContent = "Abraçar (-3 Sangue, -1 Humanidade, +5 Influência)";
-            btn1.onclick = () => resolveChoice('ignore', oldPosition); btn2.onclick = () => resolveChoice('embrace', oldPosition);
-        }
-        choiceModal.classList.remove('hidden');
-    }
-    
+    function showChoiceModal(cardType, oldPosition) { const title = document.querySelector('#choice-modal h3'); const desc = document.querySelector('#choice-modal p'); const btn1 = document.getElementById('choice-btn-1'); const btn2 = document.getElementById('choice-btn-2'); if (cardType === 'ally_choice') { title.textContent = "Um Carniçal Leal"; desc.textContent = "Você pode sacrificá-lo para limpar a área, ou reforçar sua lealdade para o futuro."; btn1.textContent = "Sacrificar (-2 Humanidade)"; btn2.textContent = "Alimentar (-1 Sangue, +1 Influência)"; btn1.onclick = () => resolveChoice('sacrifice', oldPosition); btn2.onclick = () => resolveChoice('maintain', oldPosition); } else if (cardType === 'fateful_choice') { title.textContent = "A Oportunidade de um Abraço"; desc.textContent = "Este mortal... ele tem potencial. Amaldiçoá-lo com a imortalidade trará grande poder, a um custo."; btn1.textContent = "Ignorar"; btn2.textContent = "Abraçar (-3 Sangue, -1 Humanidade, +5 Influência)"; btn1.onclick = () => resolveChoice('ignore', oldPosition); btn2.onclick = () => resolveChoice('embrace', oldPosition); } choiceModal.classList.remove('hidden'); }
     function activateDiscipline(d) { if (!isPlayerTurn) return; if (activeDiscipline && activeDiscipline.effect === d.effect) { activeDiscipline = null; logMessage("Disciplina desativada."); } else if (player.blood > d.cost) { activeDiscipline = d; logMessage(`Ativado: ${d.name}.`); if (d.effect === "auspex") { player.blood -= d.cost; logMessage("Você sente a aura das coisas ao redor."); getAdjacentIndices(player.position).forEach(i => { if (gameBoard[i]) gameBoard[i].isRevealed = true; }); activeDiscipline = null; } } else { logMessage("Sangue insuficiente."); } updateUI(); }
     function targetDiscipline(t) { if (!activeDiscipline || !gameBoard[t]) return; isPlayerTurn = false; player.blood -= activeDiscipline.cost; let m = ""; const o = player.position; if (activeDiscipline.effect === "animalism") { gameBoard[t] = { name: "Ratos", type: "animal", blood: 2 }; m = "Você invoca um enxame."; player.runStats.influenceGained += 1; } else if (activeDiscipline.effect === "presence" && gameBoard[t].type.includes("danger")) { gameBoard[t] = getRandomCard(); m = "Intimidado, o perigo recua."; player.runStats.influenceGained += 2; } activeDiscipline = null; endTurn({ message: m, oldPosition: o }); }
     
@@ -147,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('game');
     }
     
+    // --- 5. PONTO DE ENTRADA E EVENT LISTENERS ---
     function init() {
         showScreen('menu');
         generateWeightedDeck();
@@ -161,8 +177,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('new-game-btn').addEventListener('click', () => { localStorage.removeItem('vtm_save_game'); populateClanSelection(); showScreen('clanSelect'); });
         document.getElementById('clans-btn').addEventListener('click', () => { populateClanStore(); showScreen('store'); });
         document.querySelectorAll('.back-btn').forEach(btn => btn.addEventListener('click', () => init()));
+
+        // Listeners do Tutorial (NOVAS LINHAS)
+        const tutorialModal = document.getElementById('tutorial-modal');
+        document.getElementById('tutorial-btn').addEventListener('click', () => {
+            tutorialModal.classList.remove('hidden');
+        });
+        document.getElementById('close-tutorial-btn').addEventListener('click', () => {
+            tutorialModal.classList.add('hidden');
+        });
+
+        // Listeners dos Botões "Voltar"
+        document.querySelectorAll('.back-btn').forEach(btn => {
+            btn.addEventListener('click', () => init());
+        });
     }
 
-    // --- PONTO DE ENTRADA ---
+    // Inicia a aplicação
     init();
 });
