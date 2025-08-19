@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crônicas da Noite</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app-container">
+
+        <!-- TELA 1: MENU PRINCIPAL -->
+        <div id="main-menu-screen" class="screen">
+            <header>
+                <h1 class="game-title">Crônicas da Noite</h1>
+            </header>
+            <main class="menu-buttons">
+                <button id="continue-btn" class="menu-btn hidden">Continuar</button>
+                <button id="new-game-btn" class="menu-btn">Nova Noite</button>
+                <button id="clans-btn" class="menu-btn">Refúgio dos Clãs</button>
+                <button id="tutorial-btn" class="menu-btn secondary">Como Jogar</button>
+            </main>
+            <footer>
+                <p class="influence-display">Sua Influência: <span id="total-influence-display">0</span></p>
+            </footer>
+        </div>
+
+        <!-- TELA 2: SELEÇÃO DE CLÃ -->
+        <div id="clan-select-screen" class="screen hidden">
+            <header><h2>Escolha seu Clã</h2></header>
+            <main id="clan-selection-container"></main>
+            <footer><button class="menu-btn back-btn">Voltar</button></footer>
+        </div>
+
+        <!-- TELA 3: O JOGO EM SI -->
+        <div id="game-screen" class="screen hidden">
+            <header id="player-stats">
+                <h2 id="clan-name"></h2>
+                <div id="player-info">
+                     <p><span id="blood-label">Sangue:</span> <span id="blood-stat">10</span></p>
+                     <p><span id="humanity-label">Humanidade:</span> <span id="humanity-stat">7</span></p>
+                </div>
+            </header>
+            <main id="game-board-container">
+                <div id="game-board"></div>
+            </main>
+            <footer id="game-footer">
+                <div id="log"><p id="log-message"></p></div>
+                <div id="abilities">
+                    <div id="disciplines-container"></div>
+                </div>
+                <div id="game-controls">
+                    <button id="quit-run-btn">Desistir</button>
+                </div>
+            </footer>
+        </div>
+        
+        <!-- TELA 4: LOJA DE CLÃS -->
+        <div id="clans-store-screen" class="screen hidden">
+            <header><h2>Refúgio dos Clãs</h2></header>
+            <main id="clans-store-container"></main>
+            <footer><button class="menu-btn back-btn">Voltar</button></footer>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE ESCOLHA (do Informante) -->
+    <div id="choice-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3>Um Informante!</h3>
+            <p>Ele tem informações, mas também parece... apetitoso. O que você faz?</p>
+            <div class="modal-buttons">
+                <button id="choice-btn-1" data-choice="info">Extrair Informação (-1 Sangue)</button>
+                <button id="choice-btn-2" data-choice="silence">Silenciá-lo (+2 Sangue, -1 Humanidade)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE TUTORIAL -->
+    <div id="tutorial-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3>Como Jogar</h3>
+            <div class="tutorial-text">
+                <p><strong>Objetivo:</strong> Sobreviva à noite. Cada movimento consome recursos. Cuidado para não zerar seu <strong>Sangue</strong> (vida) ou sua <strong>Humanidade</strong> (sanidade).</p>
+                <p><strong>Movimento:</strong> Você só pode se mover para cartas adjacentes (não diagonais). Cada movimento revela uma nova carta no espaço que você deixou para trás.</p>
+                <p><strong>Recursos:</strong><br>
+                   <span class="text-blood">Sangue:</span> Usado para sobreviver a danos e ativar Disciplinas. Recupere se alimentando.<br>
+                   <span class="text-humanity">Humanidade:</span> Representa sua luta contra a Besta. Atos brutais a diminuem. Zere e você perde.</p>
+                <p><strong>Influência:</strong> É a moeda do jogo, ganha ao final de cada partida. Use-a no menu "Refúgio dos Clãs" para desbloquear novos clãs com habilidades únicas.</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="close-tutorial-btn">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

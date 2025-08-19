@@ -1,0 +1,247 @@
+/* --- RESET E ESTILOS GLOBAIS --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Roboto Condensed', sans-serif;
+    background-color: #101010;
+    background-image: radial-gradient(circle, transparent 30%, #000 130%);
+    color: #e0e0e0;
+    overflow-y: auto; /* Impede o scroll em telas mobile */
+}
+
+/* --- ESTRUTURA PRINCIPAL DA APLICAÇÃO (MOBILE-FIRST) --- */
+#app-container {
+    width: 100%;
+    height: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5vh 2vw; /* Usa unidades relativas à tela */
+}
+
+.screen {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+.hidden { display: none !important; }
+
+header { flex-shrink: 0; padding: 2vh 0; }
+main { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+footer { flex-shrink: 0; padding: 2vh 0; }
+
+/* --- TIPOGRAFIA ADAPTÁVEL --- */
+h1, h2, h3 {
+    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+    color: #a11a1a;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+    margin-bottom: 20px;
+}
+/* clamp(min, ideal, max) -> fonte fluida */
+.game-title { font-size: clamp(2.5rem, 12vw, 4rem); margin-bottom: 40px; }
+h2 { font-size: clamp(1.5rem, 8vw, 2.2rem); }
+
+/* --- BOTÕES OTIMIZADOS PARA TOQUE --- */
+.menu-btn, #quit-run-btn, .buy-btn {
+    font-family: 'Cinzel', serif;
+    background: transparent;
+    border: 1px solid #555;
+    color: #ccc;
+    padding: 18px 10px; /* Mais padding vertical para toque */
+    margin: 8px 0;
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    text-transform: uppercase;
+    border-radius: 3px;
+}
+.menu-btn:hover, #quit-run-btn:hover, .buy-btn:hover:not(:disabled) {
+    border-color: #e0e0e0; color: #fff; transform: scale(1.02);
+}
+.menu-btn:active, #quit-run-btn:active, .buy-btn:active {
+    transform: scale(0.98); background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- TELA DE MENU PRINCIPAL --- */
+#main-menu-screen { justify-content: center; }
+.influence-display { margin-top: 40px; font-size: clamp(1rem, 4vw, 1.1rem); color: #00c3ff; font-family: 'Cinzel', serif; }
+
+/* --- TELA DO JOGO (LAYOUT FLEXÍVEL) --- */
+#game-screen { justify-content: space-between; }
+#player-stats { padding-bottom: 10px; border-bottom: 1px solid #333; }
+#player-info { display: flex; justify-content: space-around; font-size: 1.1em; }
+#blood-label, #blood-stat { color: #f44336; font-weight: bold; }
+#humanity-label, #humanity-stat { color: #2196F3; font-weight: bold; }
+
+#game-board-container { flex-grow: 1; display: flex; align-items: center; }
+#game-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 330px; margin: 0 auto; }
+.card {
+    width: 100%; aspect-ratio: 3 / 4; border: 1px solid #444; border-radius: 8px;
+    background-color: #222; display: flex; flex-direction: column; justify-content: center;
+    align-items: center; cursor: pointer; transition: transform 0.3s ease-in-out, box-shadow 0.3s, border-color 0.3s, opacity 0.3s;
+    position: relative; padding: 5px; box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+    font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+}
+.card:hover { border-color: #fff; transform: translateY(-5px); }
+.card.player { background-color: #4a1a1a; border: 2px solid #ff4d4d; }
+.card.non-adjacent { opacity: 0.6; border-color: #333; cursor: not-allowed; }
+.card.non-adjacent:hover { transform: none; }
+.card.targetable { box-shadow: 0 0 20px #00c3ff; border-color: #00c3ff; }
+.card-stat { position: absolute; font-size: 14px; font-weight: bold; padding: 2px 5px; border-radius: 3px; background: rgba(0,0,0,0.6); }
+.stat-gain { top: 5px; right: 5px; color: #f44336; }
+.stat-loss { top: 5px; right: 5px; color: #f44336; }
+.player-blood-stat { bottom: 5px; left: 5px; color: #f44336; }
+.player-humanity-stat { bottom: 5px; right: 5px; color: #2196F3; }
+
+/* -----------------------------------CLANS */
+.card-brujah {
+    background-image: url('imgs/clans/brujah.png');
+    background-size: cover;
+    background-position: center;
+}
+.card-nosferatu {
+    background-image: url('imgs/clans/nosferatu.png');
+    background-size: cover;
+    background-position: center;
+}
+.card-toreador {
+    background-image: url('imgs/clans/toreador.png');
+    background-size: cover;
+    background-position: center;
+}
+
+/* -----------------------------------OTHERS */
+.card-Policial {
+    background-image: url('imgs/clans/police.png');
+    background-size: cover;
+    background-position: center;
+}
+.card-Rato {
+    background-image: url('imgs/clans/rat.png');
+    background-size: cover;
+    background-position: center;
+}
+.card-Mortal {
+    background-image: url('imgs/clans/man_victim.png');
+    background-size: cover;
+    background-position: center;
+}
+.card-Beco {
+    background-image: url('imgs/clans/dark-alley.jpg');
+    background-size: cover;
+    background-position: center;
+}
+.card-Bolsa_sangue {
+    background-image: url('imgs/clans/blood-bag.png');
+    background-size: cover;
+    background-position: center;
+}
+.card-Bolsa_sangue {
+    background-image: url('imgs/clans/blood-bag.png');
+    background-size: cover;
+    background-position: center;
+}
+
+#game-footer { border-top: 1px solid #333; padding-top: 10px; }
+#log { min-height: 2em; font-style: italic; color: #888; font-size: 0.9em; }
+#disciplines-container { margin: 10px 0; display: flex; justify-content: center; flex-wrap: wrap; }
+.discipline-btn { font-family: 'Roboto Condensed', sans-serif; background: #333; border: 1px solid #555; padding: 8px 12px; margin: 3px; font-size: 0.9em; border-radius: 5px; }
+.discipline-btn.active { background: #ff4d4d; color: #111; border-color: #ff4d4d; }
+
+/* --- TELA DA LOJA DE CLÃS E SELEÇÃO --- */
+#clans-store-screen main, #clan-select-screen main { justify-content: flex-start; padding-top: 20px; }
+.clan-store-card { background-color: #1c1c1c; border: 1px solid #333; border-radius: 5px; margin: 10px 0; padding: 15px; width: 100%; transition: all 0.3s; }
+.clan-store-card.locked { filter: opacity(60%); }
+.buy-btn { background-color: #006b8f; border: 1px solid #009dcf; color: white; font-size: 1em; }
+.buy-btn:disabled { background-color: #333; border-color: #444; color: #777; cursor: not-allowed; }
+
+/* --- MODAL E FIM DE JOGO --- */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background-color: #1a1a1a; padding: 25px; border-radius: 5px; border: 2px solid #5a0a0a; text-align: center; max-width: 350px; }
+.modal-content h3 { margin-top: 0; color: #ff4d4d; }
+.modal-buttons button { background-color: #5a0a0a; color: #e0e0e0; border: 1px solid #ff4d4d; padding: 10px 15px; margin: 5px; cursor: pointer; font-family: 'Georgia', serif; font-size: 14px; }
+.modal-buttons button:hover { background-color: #7a2a2a; }
+
+.end-game-summary { grid-column: 1 / -1; padding: 20px; text-align: center; color: #e0e0e0; }
+.end-game-summary h2 { color: #ff4d4d; margin-bottom: 20px; }
+.end-game-summary p { margin: 5px 0; font-size: 1em; color: #ccc; }
+.end-game-summary h4 { margin-top: 20px; font-size: 1.2em; color: #00c3ff; }
+
+.menu-btn.secondary {
+    background: transparent;
+    border-color: #444;
+    color: #888;
+    font-size: 1rem; /* Um pouco menor */
+}
+.menu-btn.secondary:hover {
+    border-color: #777;
+    color: #ccc;
+}
+
+/* --- MODAL (adições para o tutorial) --- */
+.modal-content {
+    /* ... (estilos existentes) ... */
+    max-height: 80vh; /* Impede que o modal seja maior que a tela */
+    overflow-y: auto; /* Adiciona scroll se o conteúdo for muito grande */
+}
+.tutorial-text {
+    text-align: left;
+    margin: 20px 0;
+    line-height: 1.6;
+}
+.tutorial-text p {
+    margin-bottom: 15px;
+}
+.tutorial-text strong {
+    color: #e0e0e0;
+    font-weight: 700;
+}
+.tutorial-text .text-blood {
+    color: #f44336;
+    font-weight: bold;
+}
+.tutorial-text .text-humanity {
+    color: #2196F3;
+    font-weight: bold;
+}
+
+.clan-store-card h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-family: 'Roboto Condensed', sans-serif;
+    text-transform: none;
+    color: #ccc;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    text-align: left;
+}
+
+.discipline-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    font-size: 0.9em;
+}
+
+.discipline-list li {
+    margin-bottom: 8px;
+    color: #999;
+}
+
+.discipline-list li strong {
+    color: #ddd;
+}
+
+.buy-section {
+    margin-top: 20px;
+}
